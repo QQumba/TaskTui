@@ -9,11 +9,25 @@ public static class Steps
     {
         AnsiConsole.Clear();
         
+        var maxNameWidth = tasks.Max(t => t.Name.Length);
+        maxNameWidth = Math.Min(maxNameWidth, 30);
+        
         var task = AnsiConsole.Prompt(
             new SelectionPrompt<RunnableTask>()
                 .Title("[green]Select task[/]")
                 .EnableSearch()
-                .UseConverter(t => t.Name)
+                .UseConverter(t =>
+                {
+                    var paddedName = t.Name.PadRight(maxNameWidth);
+                    
+                    var displayedText = $"[green]{paddedName}[/]";
+                    if (t.Description != null)
+                    {
+                        displayedText += $"    [grey]{Markup.Escape(t.Description)}[/]";
+                    }
+                    
+                    return displayedText;
+                })
                 .AddChoices(tasks));
         
         ctx.Task = task;
@@ -56,8 +70,17 @@ public static class Steps
         
         if (variables.Count == 0)
         {
-            AnsiConsole.MarkupLine("\n[grey]Press Enter to run the task...[/]");
-            Console.ReadLine();
+            AnsiConsole.MarkupLine("\n[grey]Press Escape to go back or Enter to run the task...[/]");
+            var key = Console.ReadKey(true);
+            if (key.Key == ConsoleKey.Escape)
+            {
+                return AppState.SelectTask;
+            }
+
+            if (key.Key == ConsoleKey.Enter)
+            {
+                Console.WriteLine();
+            }
         }
 
         ctx.Variables = variables;
