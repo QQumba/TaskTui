@@ -1,6 +1,7 @@
 ﻿using TaskTui;
+using TaskTui.Models;
 using static TaskTui.Steps;
-using AppContext = TaskTui.AppContext;
+using AppContext = TaskTui.Models.AppContext;
 
 Console.WriteLine("Hello, World!");
 

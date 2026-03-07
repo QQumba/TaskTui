@@ -1,4 +1,5 @@
 ﻿using Spectre.Console;
+using TaskTui.Models;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 

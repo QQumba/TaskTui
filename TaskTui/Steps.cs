@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 using Spectre.Console;
+using TaskTui.Models;
+using AppContext = TaskTui.Models.AppContext;
 
 namespace TaskTui;
 
@@ -88,21 +90,6 @@ public static class Steps
             cache.AddVariable(variable.Name, value);
             variables[variable.Name] = value;
         }
-        
-        // if (variables.Count == 0)
-        // {
-        //     AnsiConsole.MarkupLine("\n[grey]Press Escape to go back or Enter to run the task...[/]");
-        //     var key = Console.ReadKey(true);
-        //     if (key.Key == ConsoleKey.Escape)
-        //     {
-        //         return AppState.SelectTask;
-        //     }
-        //
-        //     if (key.Key == ConsoleKey.Enter)
-        //     {
-        //         Console.WriteLine();
-        //     }
-        // }
 
         ctx.Variables = variables;
         return AppState.RunTask;

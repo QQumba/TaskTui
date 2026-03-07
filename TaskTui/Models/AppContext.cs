@@ -1,4 +1,4 @@
-﻿namespace TaskTui;
+﻿namespace TaskTui.Models;
 
 public class AppContext
 {
