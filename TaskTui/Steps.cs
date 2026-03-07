@@ -9,6 +9,9 @@ public static class Steps
     {
         AnsiConsole.Clear();
         
+        using var cache = new Cache();
+        var sortedTasks = GetSortedTasks(tasks, cache.LatestRunTasks);
+        
         var maxNameWidth = tasks.Max(t => t.Name.Length);
         maxNameWidth = Math.Min(maxNameWidth, 30);
         
@@ -28,8 +31,9 @@ public static class Steps
                     
                     return displayedText;
                 })
-                .AddChoices(tasks));
+                .AddChoices(sortedTasks));
         
+        cache.AddTask(task.Name);
         ctx.Task = task;
         return AppState.SelectVariables;
     }
@@ -40,12 +44,28 @@ public static class Steps
         {
             throw new InvalidOperationException("No task selected");
         }
+
+        var variables = new Dictionary<string, string?>();
+        if (ctx.Task.Variables.Length == 0)
+        {
+            ctx.Variables = variables;
+            return AppState.RunTask;
+        }
+
+        using var cache = new Cache();
+        foreach (var variable in ctx.Task.Variables)
+        {
+            if (cache.Variables.TryGetValue(variable.Name, out var cachedVar))
+            {
+                variable.DefaultValue = cachedVar;
+            }
+        }
         
         ShowTaskInfo(ctx.Task);
         
-        var variables = new Dictionary<string, string?>();
         foreach (var variable in ctx.Task.Variables)
         {
+            
             CancellableTextPrompt prompt;
             
             if (variable.DefaultValue is null)
@@ -64,24 +84,25 @@ public static class Steps
             {
                 return AppState.SelectTask;
             }
-            
+
+            cache.AddVariable(variable.Name, value);
             variables[variable.Name] = value;
         }
         
-        if (variables.Count == 0)
-        {
-            AnsiConsole.MarkupLine("\n[grey]Press Escape to go back or Enter to run the task...[/]");
-            var key = Console.ReadKey(true);
-            if (key.Key == ConsoleKey.Escape)
-            {
-                return AppState.SelectTask;
-            }
-
-            if (key.Key == ConsoleKey.Enter)
-            {
-                Console.WriteLine();
-            }
-        }
+        // if (variables.Count == 0)
+        // {
+        //     AnsiConsole.MarkupLine("\n[grey]Press Escape to go back or Enter to run the task...[/]");
+        //     var key = Console.ReadKey(true);
+        //     if (key.Key == ConsoleKey.Escape)
+        //     {
+        //         return AppState.SelectTask;
+        //     }
+        //
+        //     if (key.Key == ConsoleKey.Enter)
+        //     {
+        //         Console.WriteLine();
+        //     }
+        // }
 
         ctx.Variables = variables;
         return AppState.RunTask;
@@ -143,5 +164,19 @@ public static class Steps
         };
 
         AnsiConsole.Write(infoPanel);
+    }
+
+    private static List<RunnableTask> GetSortedTasks(IEnumerable<RunnableTask> tasks, IEnumerable<string> lastRunTaskNames)
+    {
+        var lastRunTasks = lastRunTaskNames
+            .Distinct()
+            .Select(x => tasks.FirstOrDefault(t => t.Name == x))
+            .Where(x => x != null)
+            .ToList();
+
+        var sortedTasks = new List<RunnableTask>(lastRunTasks!);
+        sortedTasks.AddRange(tasks.Where(t => !lastRunTasks.Contains(t)));
+        
+        return sortedTasks;
     }
 }

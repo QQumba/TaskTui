@@ -38,18 +38,14 @@ public class CancellableTextPrompt
                     return (PromptResult.Cancel, DefaultValue);
 
                 case ConsoleKey.Enter:
-                    if (buffer.Length == 0)
+                    if (buffer.Length == 0 && !AllowEmpty)
                     {
-                        if (!AllowEmpty)
-                        {
-                            continue;
-                        }
-                        
-                        return (PromptResult.Value, DefaultValue);
+                        continue;
                     }
 
                     Console.WriteLine();
-                    return (PromptResult.Value, buffer.ToString());
+                    var value = buffer.Length == 0 ? DefaultValue : buffer.ToString();
+                    return (PromptResult.Value, value);
 
                 case ConsoleKey.Backspace:
                     if (buffer.Length > 0)
