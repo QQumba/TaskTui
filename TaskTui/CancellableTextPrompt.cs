@@ -24,9 +24,8 @@ public class CancellableTextPrompt
 
     public (PromptResult result, string? value) Show()
     {
-        AnsiConsole.Markup(DefaultValue is null ? $"{_prompt}: " : $"{_prompt} [green]({DefaultValue})[/]: ");
-
-        var buffer = new StringBuilder();
+        var buffer = new StringBuilder(DefaultValue ?? string.Empty);
+        AnsiConsole.Markup($"{_prompt}: [green]{buffer}[/]");
 
         while (true)
         {
