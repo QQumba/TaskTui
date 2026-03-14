@@ -7,12 +7,12 @@ namespace TaskTui;
 
 public static class Steps
 {
-    public static AppState PromptTask(AppContext ctx, ICollection<RunnableTask> tasks)
+    public static AppState PromptTask(AppContext ctx, List<RunnableTask> tasks)
     {
         AnsiConsole.Clear();
         
         using var cache = new Cache();
-        var sortedTasks = GetSortedTasks(tasks, cache.LatestRunTasks);
+        var sortedTasks = cache.GetSortedTasks(tasks);
         
         var maxNameWidth = tasks.Max(t => t.Name.Length);
         maxNameWidth = Math.Min(maxNameWidth, 30);
@@ -57,7 +57,7 @@ public static class Steps
         using var cache = new Cache();
         foreach (var variable in ctx.Task.Variables)
         {
-            if (cache.Variables.TryGetValue(variable.Name, out var cachedVar))
+            if (cache.State.Vars.TryGetValue(variable.Name, out var cachedVar))
             {
                 variable.DefaultValue = cachedVar;
             }
@@ -151,19 +151,5 @@ public static class Steps
         };
 
         AnsiConsole.Write(infoPanel);
-    }
-
-    private static List<RunnableTask> GetSortedTasks(IEnumerable<RunnableTask> tasks, IEnumerable<string> lastRunTaskNames)
-    {
-        var lastRunTasks = lastRunTaskNames
-            .Distinct()
-            .Select(x => tasks.FirstOrDefault(t => t.Name == x))
-            .Where(x => x != null)
-            .ToList();
-
-        var sortedTasks = new List<RunnableTask>(lastRunTasks!);
-        sortedTasks.AddRange(tasks.Where(t => !lastRunTasks.Contains(t)));
-        
-        return sortedTasks;
     }
 }

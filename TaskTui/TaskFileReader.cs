@@ -39,7 +39,7 @@ public class TaskFileReader
         return deserializer.Deserialize<TaskFile>(yaml);
     }
 
-    public static ICollection<RunnableTask> GetTasks(TaskFile taskFile)
+    public static List<RunnableTask> GetTasks(TaskFile taskFile)
     {
         var fileVariables = taskFile.Vars ?? new Dictionary<string, string>();
 
@@ -61,7 +61,7 @@ public class TaskFileReader
             }
 
             return new RunnableTask(kv.Key, kv.Value.Desc, variables);
-        }).ToArray();
+        }).ToList();
 
         return tasks;
     }

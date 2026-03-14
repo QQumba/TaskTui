@@ -2,65 +2,56 @@
 
 namespace TaskTui;
 
-public sealed class Cache : IDisposable
+public interface ICache
 {
-    private const string CacheFileName = "tasktui.cache.json";
+    public CacheState State { get; }
+}
+
+public sealed class Cache : ICache, IDisposable
+{
+    public const string DefaultCacheFileName = "tasktui.cache.json";
+    
     private static readonly JsonSerializerOptions Options = new(JsonSerializerDefaults.Web) { WriteIndented = true };
 
-    private readonly CacheState _state = Load();
-    
-    public IReadOnlyList<string> LatestRunTasks => _state.LatestTasks;
-    public IReadOnlyDictionary<string, string> Variables => _state.Vars;
+    private readonly string _cacheFileName;
 
-    public void AddTask(string taskName)
+    public CacheState State { get; }
+
+    public Cache() : this(DefaultCacheFileName)
     {
-        var list = new LinkedList<string>(_state.LatestTasks);
-        
-        list.Remove(taskName);
-        list.AddFirst(taskName);
-        if (list.Count > 10)
-        {
-            list.RemoveLast();
-        }
-
-        _state.LatestTasks = list.ToList();
     }
 
-    public void AddVariable(string name, string? value)
+    public Cache(string cacheFileName)
     {
-        if (value is null)
-        {
-            return;
-        }
-        
-        _state.Vars[name] = value;
+        _cacheFileName = cacheFileName;
+        State = Load();
     }
-    
-    private static CacheState Load()
+
+    private CacheState Load()
     {
-        if (!File.Exists(CacheFileName))
+        if (!File.Exists(_cacheFileName))
         {
             return new CacheState();
         }
 
         try
         {
-            return JsonSerializer.Deserialize<CacheState>(File.ReadAllText(CacheFileName), Options) ?? new CacheState();
+            return JsonSerializer.Deserialize<CacheState>(File.ReadAllText(_cacheFileName), Options) ?? new CacheState();
         }
         catch (Exception)
         {
             return new CacheState();
         }
     }
-    
-    private static void Save(CacheState state)
+
+    private void Save(CacheState state)
     {
-        File.WriteAllText(CacheFileName, JsonSerializer.Serialize(state, Options));
+        File.WriteAllText(_cacheFileName, JsonSerializer.Serialize(state, Options));
     }
 
     public void Dispose()
     {
-        Save(_state);
+        Save(State);
     }
 }
 
