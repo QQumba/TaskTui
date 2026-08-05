@@ -3,8 +3,6 @@ using TaskTui.Models;
 using static TaskTui.Steps;
 using AppContext = TaskTui.Models.AppContext;
 
-Console.WriteLine("Hello, World!");
-
 var taskFile = await TaskFileReader.ReadTaskFile();
 var tasks = TaskFileReader.GetTasks(taskFile);
 

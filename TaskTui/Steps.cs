@@ -127,10 +127,23 @@ public static class Steps
         process.Start();
         await process.WaitForExitAsync();
         
-        AnsiConsole.MarkupLine("\n[grey]Press Enter to return to task list...[/]");
-        Console.ReadLine();
+        AnsiConsole.MarkupLine("\n[grey]Press Enter to return to task list or press R to re-run the task...[/]");
+        return HandleTaskCompletedState();
         
-        return AppState.SelectTask;
+        AppState HandleTaskCompletedState()
+        {
+            while (true)
+            {
+                var keyInfo = Console.ReadKey(true);
+                switch (keyInfo.Key)
+                {
+                    case ConsoleKey.R:
+                        return AppState.RunTask;
+                    case ConsoleKey.Enter:
+                        return AppState.SelectTask;
+                }
+            }
+        }
     }
 
     private static void ShowTaskInfo(RunnableTask task)
